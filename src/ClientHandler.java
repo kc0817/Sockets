@@ -21,10 +21,11 @@ public class ClientHandler implements Runnable{
             while (true) {
                 String request = in.readLine();
                 System.out.println("client : " + request);
-                if(request.contains("name")) {
-                    out.println("Kevin");
-                } else {
-                    out.println("did not find name in input");
+                if(request.startsWith("say")) {
+                    int firstSpace = request.indexOf(" ");
+                    if(firstSpace != -1) {
+                        outToAll(request.substring(firstSpace + 1));
+                    }
                 }
             }
         } catch (IOException e) {

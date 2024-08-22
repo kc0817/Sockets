@@ -8,10 +8,13 @@ public class Client {
     public static void main(String[] args) throws UnknownHostException, IOException {
         Socket socket = new Socket("localhost", 4999); 
 
+        ServerConnection serverConnection = new ServerConnection(socket);
+
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         BufferedReader keyboard = new BufferedReader(new InputStreamReader(System.in));
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
+        new Thread(serverConnection).start();
 
         while (true) {
             System.out.println("> ");
@@ -20,14 +23,9 @@ public class Client {
 
             // get line user typed
             if (command.equals("quit")) break;
-            System.out.println("client command: " + command);
 
             // send line to server
             out.println(command);
-            
-            // receiving input from server
-            String serverResponse = in.readLine();
-            System.out.println("server: " + serverResponse);
         }
 
         socket.close();
