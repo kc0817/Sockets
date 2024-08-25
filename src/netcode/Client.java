@@ -1,26 +1,33 @@
 package netcode;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
 
 public class Client {
     private static Socket clientSide;
+    private static PrintWriter out;
     public static void main(String[] args) throws IOException {
-        clientSide = new Socket("localhost", 4999);
+        clientSide = new Socket("10.0.0.3", 4999);
         System.out.println("connection established");
 
+        out = new PrintWriter(clientSide.getOutputStream(), true);
+        new Thread(new KeyboardInputListener() {
+            @Override
+            public void handleInput(String input) {
+                out.println(input);
+            }
+        }).start();
+
         new Thread(new ClientReceiver(clientSide)).start();
-        PrintWriter out = new PrintWriter(clientSide.getOutputStream(), true);
-        BufferedReader keyboard = new BufferedReader(new InputStreamReader(System.in));
-        
-        while (true) {
-            System.out.println("> ");
-            // blocking call
-            String userInput = keyboard.readLine();
-            System.out.println("you typed " + userInput);
-            out.println(userInput);
+    }
+
+    public static void closeClientSide() {
+        System.out.println("closing client side");
+        try {
+            clientSide.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            System.exit(0);
         }
     }
 }

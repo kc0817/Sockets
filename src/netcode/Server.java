@@ -6,16 +6,25 @@ import java.util.ArrayList;
 
 public class Server {
     private static ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
+    private static ServerSocket serverSocket;
     public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = new ServerSocket(4999);
+        serverSocket = new ServerSocket(4999);
+
+        new Thread(new KeyboardInputListener() {
+            @Override
+            public void handleInput(String input) {
+                checkServerCmds(input);
+            }
+        }).start();
+
         // listening for new clients
         try {
             while (true) {
                 System.out.println("waiting");
                 Socket serverSide = serverSocket.accept();
-                System.out.println("connection established");
+                System.out.println("connected");
                 // handles the data that server sends to client
-                ClientHandler clientHandler = new ClientHandler(serverSide);
+                ClientHandler clientHandler = new ClientHandler(serverSide, clientHandlers);
                 clientHandlers.add(clientHandler);
                 new Thread(clientHandler).start();
             }
@@ -23,27 +32,26 @@ public class Server {
             System.out.println("error when listening for new clients");
             e.printStackTrace();
         } finally {
-            System.out.println("inside finally block");
-            closeAll();
-            serverSocket.close();
-            System.exit(0);
+            closeServerSide();
         }
         
     }
-    public static void closeAll() {
-        System.out.println("closing all");
-        for(ClientHandler clientHandler: clientHandlers) {
-            clientHandler.close();
+    
+    private static void checkServerCmds(String input) {
+        switch (input) {
+            case "quit":
+                closeServerSide();
+                break;
         }
     }
-    public static void outToAll(String msg) {
-        System.out.println("inside outToAll | msg: " + msg);
-        for(ClientHandler clientHandler: clientHandlers) {
-            clientHandler.out.println("client: " + msg);
+    
+    public static void closeServerSide() {
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-    } 
-
+        System.out.println("closing server side");
+        System.exit(0);
+    }
 }
-
-// to send and receive messages to and from client, RELY ON CLIENT SOCKET
-// to send messages to client: 

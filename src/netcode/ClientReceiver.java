@@ -20,18 +20,11 @@ public class ClientReceiver implements Runnable {
                 }
 
                 System.out.println(serverMsg);
+                System.out.println(">");
             }
         } catch (IOException e) {
-            System.out.println("inside catch statement");
         } finally {
-            
-            System.out.println("inside finally for client");
-            try {
-                in.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } 
-            System.exit(0);
+            Client.closeClientSide();
         }
     }
     
